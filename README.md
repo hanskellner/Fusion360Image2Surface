@@ -34,7 +34,7 @@ For example, on my Mac the folder is located in:
 
 4. A file dialog will be displayed.
   - Select an image file to convert to a surface and click OK.
-  - Note, because of limitations in Fusion on the size of meshes, I highly recommend using only very small images. For example, the moon image above is only 50x50 pixels. If you have an image that's large then create a smaller version of it then import that.
+  - Note, because of limitations in Fusion on the size of meshes, I highly recommend using only very small images. For example, the moon image used to generate the above surface is only 50x50 pixels. If you have an image that's large then create a smaller version of it then import that.
 
 5. The settings dialog will be shown.  Adjust your preferences:
 
@@ -74,7 +74,7 @@ Note that the default settings "Mesh Body" style and "OBJ" export format are req
 
 Here's the heightmap image of the moon's surface that was used to generate the mesh and t-spline shown at the top of the page.
 
-![Moon Heightmap](./resources/MoonHeightmap.png)
+![Moon Heightmap](./resources/MoonHeightmap.jpg)
 
 And here's the t-spline in the CAM environment being used to create toolpaths for milling:
 
