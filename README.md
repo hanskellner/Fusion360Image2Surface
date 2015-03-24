@@ -34,6 +34,8 @@ For example, on my Mac the folder is located in:
 
 4. A file dialog will be displayed.
   - Select an image file to convert to a surface and click OK.
+  - Note, because of limitations in Fusion on the size of meshes, I highly recommend using only very small images. For example, the moon image above is only 50x50 pixels. If you have an image that's large then create a smaller version of it then import that.
+
 5. The settings dialog will be shown.  Adjust your preferences:
 
   ![Image of Settings Dialog](./resources/SettingsDialog.png)
@@ -70,7 +72,11 @@ If you have created a mesh then it's useful to convert it to a T-Spline or BRep 
 
 Note that the default settings "Mesh Body" style and "OBJ" export format are required for a usable mesh to be used in Fusion 360.  The other two styles are good for experimenting but don't create a mesh.  And the STL format only supports triangular faces, which can be used to create a mesh in Fusion, but the mesh can't be converted to a T-Spline. Note, you can use the OBJ or STL file generated in another application such as [Autodesk Meshmixer](http://www.meshmixer.com/). For example, to decimate the mesh (simplify) and then load that into Fusion 360.
 
-Here's an image of a moon surface height map imported, converted to a T-Spline, then brought into the CAM environment for creating toolpaths:
+Here's the heightmap image of the moon's surface that was used to generate the mesh and t-spline shown at the top of the page.
+
+![Moon Heightmap](./resources/MoonHeightmap.png)
+
+And here's the t-spline in the CAM environment being used to create toolpaths for milling:
 
 ![Moon CAM Toolpaths](./resources/MoonCAMToolpaths.png)
 
