@@ -56,17 +56,17 @@ If you have created a mesh then it's useful to convert it to a T-Spline or BRep 
 
 - Mesh to T-Spline
 
-1. Enter the Sculpt environment
-2. Select the Modify->Convert toolbar item
-3. Follow the steps in the dialog to convert the mesh to a T-Spline
+  1. Enter the Sculpt environment
+  2. Select the Modify->Convert toolbar item
+  3. Follow the steps in the dialog to convert the mesh to a T-Spline
 
-  ![Convert Mesh Dialog](./resources/ConvertMeshToTSpline.png)
+    ![Convert Mesh Dialog](./resources/ConvertMeshToTSpline.png)
 
 - Mesh to BRep
 
-1. Enter the Model or Patch environment
-2. Select the mesh
-3. Select the Modify->Mesh->Mesh to BRep toolbar item
+  1. Enter the Model or Patch environment
+  2. Select the mesh
+  3. Select the Modify->Mesh->Mesh to BRep toolbar item
 
 Note that the default settings "Mesh Body" style and "OBJ" export format are required for a usable mesh to be used in Fusion 360.  The other two styles are good for experimenting but don't create a mesh.  And the STL format only supports triangular faces, which can be used to create a mesh in Fusion, but the mesh can't be converted to a T-Spline. Note, you can use the OBJ or STL file generated in another application such as [Autodesk Meshmixer](http://www.meshmixer.com/). For example, to decimate the mesh (simplify) and then load that into Fusion 360.
 
