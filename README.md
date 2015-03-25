@@ -2,8 +2,6 @@
 
 This is an [Autodesk Fusion 360](http://fusion360.autodesk.com/) script that's used for generating surfaces from images.
 
-NOTE NOTE NOTE: There's an issue with this running on Windows.  Mac currently works.  Fix in progress.
-
 ![Moon Mesh](./resources/MoonMesh.png) ![Moon T-Spline](./resources/MoonTSpline.png)
 
 ## Installation

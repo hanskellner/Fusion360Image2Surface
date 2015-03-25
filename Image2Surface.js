@@ -101,10 +101,10 @@ For example, on a Mac the folder is located in:
             styleInput.listItems.add('Sketch Lines',false);
 
             var initialValLenPerPixel = adsk.core.ValueInput.createByReal(0.1);
-            var lenPerPixelInput = inputs.addValueInput('lenPerPixel', 'Length per pixel', 'mm' , initialValLenPerPixel);
+            inputs.addValueInput('lenPerPixel', 'Length per pixel', 'mm' , initialValLenPerPixel);
 
             var initialValH = adsk.core.ValueInput.createByReal(1.0);
-            var maxHeightInput = inputs.addValueInput('maxHeight', 'Max surface height', 'mm' , initialValH);
+            inputs.addValueInput('maxHeight', 'Max surface height', 'mm' , initialValH);
 
             var exportFormatInput = inputs.addDropDownCommandInput('exportFormat', 'Export format', adsk.core.DropDownStyles.TextListDropDownStyle );
             exportFormatInput.listItems.add('OBJ',true);
@@ -182,23 +182,11 @@ For example, on a Mac the folder is located in:
                 return;
             }
 
-            // HACK: Wait for image to load.  Note, we can't use onload() because it fails to be
-            // called in the current setup.
-            var failed = false;
-            var d = new Date();
-            var tStart = d.getTime();
-            while (!isImageValid(img)) {
-                // If we wait too long then error out.
-                var tNow = d.getTime();
-                if (tNow - tStart > 5000) {
-                    failed = true;
-                    break;
-                }
+            if (isImageValid(theImage)) {
+                image2surface(params, theImage);    // Generate the surface
             }
-
-            if (!failed) {
-                // Generate the surface
-                image2surface(params, img);
+            else {
+                ui.messageBox('Failed to load image : ' + imgFilename);
             }
         }
         catch (e) {
@@ -273,8 +261,8 @@ For example, on a Mac the folder is located in:
 
             // Normalize the values
             for (var i = 0; i < heightDataSize; ++i) {
-                var val = heightData[i];
-                heightData[i] = maxSurfaceHeight * ((val - minVal) / valRange);
+                var h = heightData[i];
+                heightData[i] = maxSurfaceHeight * ((h - minVal) / valRange);
             }
         }
 
@@ -345,31 +333,32 @@ For example, on a Mac the folder is located in:
 
             var meshFileContents = "";  // This will contain a string to write to the file
 
-            // Get the image filename and strip the extension.  Use that for
-            // the output filename.
-            var strFilename = img.src.replace(/\.[^/.]+$/, "");
+            // Remove extension from image filename.
+            var strOutFilename = imgFilename.replace(/\.[^/.]+$/, "");
 
-            // Remove the "file://" prefix
-            strFilename = strFilename.substring(7);
+            // Remove the "file://" prefix if it exists (when from img.src)
+            if (strOutFilename.indexOf("file://") === 0) {
+                strOutFilename = strOutFilename.substring(7);
+            }
 
             // NOTE: Fusion currently likes quads and can't or has trouble
             // converting tri patches into t-splines.  STL doesn't support
             // tris so for now we use OBJ which does.
             if (params.exportFormat === EXPORT_FORMAT.STL) {
 
-                strFilename += ".stl";  // Give it the correct extension
-                if (!verifyOverwriteFile(strFilename)) {
+                strOutFilename += ".stl";  // Give it the correct extension
+                if (!verifyOverwriteFile(strOutFilename)) {
                     return false;
                 }
 
                 // Generate a string containing the STL file contents
                 // NOTE: Only supports tris and not quads
-                meshFileContents = Utils.createSTLString(strFilename, imageHeightData, img.width, img.height, params.lenPerPixel);
+                meshFileContents = Utils.createSTLString(strOutFilename, imageHeightData, img.width, img.height, params.lenPerPixel);
             }
             else { // if (params.exportFormat === EXPORT_FORMAT.OBJ)
 
-                strFilename += ".obj";  // Give it the correct extension
-                if (!verifyOverwriteFile(strFilename)) {
+                strOutFilename += ".obj";  // Give it the correct extension
+                if (!verifyOverwriteFile(strOutFilename)) {
                     return false;
                 }
 
@@ -377,21 +366,21 @@ For example, on a Mac the folder is located in:
                 var mesh = Utils.createMesh(imageHeightData, img.width, img.height, params.lenPerPixel, true /*isQuad*/);
 
                 // Now generate a string containing the OBJ file contents
-                meshFileContents = Utils.createOBJString(strFilename, mesh);
+                meshFileContents = Utils.createOBJString(strOutFilename, mesh);
             }
 
             if (meshFileContents === '') {
-                ui.messageBox('Failed to create mesh file: ' + strFilename);
+                ui.messageBox('Failed to create mesh file: ' + strOutFilename);
                 return false;
             }
 
             // Now let's write to the file.
-            adsk.writeFile(strFilename, meshFileContents);
+            adsk.writeFile(strOutFilename, meshFileContents);
 
             // Finally, add a mesh body by importing this data (STL or OBJ file).
-            var meshList = root.meshBodies.add( strFilename, adsk.fusion.MeshUnits.CentimeterMeshUnit );
+            var meshList = root.meshBodies.add( strOutFilename, adsk.fusion.MeshUnits.CentimeterMeshUnit );
             if (!meshList) {
-                ui.messageBox('Failed to add mesh body from file: ' + strFilename);
+                ui.messageBox('Failed to add mesh body from file: ' + imgFilename);
                 return false;
             }
         }
@@ -420,29 +409,30 @@ For example, on a Mac the folder is located in:
                         }
                         else if (params.style === SURFACE_STYLE.SKETCH_LINES) {
                             // Or lines
+                            var pt1, pt2;
                             if (row > 0) {
-                                var pt1 = adsk.core.Point3D.create(col*step, (row-1)*step, imageHeightData[col + (row-1)*img.height]);
-                                var pt2 = adsk.core.Point3D.create(col*step, row*step, zHeight);
-                                var vertLine = lines.addByTwoPoints(pt1,pt2);
+                                pt1 = adsk.core.Point3D.create(col*step, (row-1)*step, imageHeightData[col + (row-1)*img.height]);
+                                pt2 = adsk.core.Point3D.create(col*step, row*step, zHeight);
+                                lines.addByTwoPoints(pt1,pt2);
                             }
                             else {
                                 if (col > 0) {
-                                    var pt1 = adsk.core.Point3D.create((col-1)*step, 0, imageHeightData[col-1]);
-                                    var pt2 = adsk.core.Point3D.create(col*step, 0, zHeight);
-                                    var horzLine = lines.addByTwoPoints(pt1,pt2);
+                                    pt1 = adsk.core.Point3D.create((col-1)*step, 0, imageHeightData[col-1]);
+                                    pt2 = adsk.core.Point3D.create(col*step, 0, zHeight);
+                                    lines.addByTwoPoints(pt1,pt2);
                                 }
                             }
 
                             if (col > 0) {
-                                var pt1 = adsk.core.Point3D.create((col-1)*step, row*step, imageHeightData[(col-1) + row*img.height]);
-                                var pt2 = adsk.core.Point3D.create(col*step, row*step, zHeight);
-                                var horzLine = lines.addByTwoPoints(pt1,pt2);
+                                pt1 = adsk.core.Point3D.create((col-1)*step, row*step, imageHeightData[(col-1) + row*img.height]);
+                                pt2 = adsk.core.Point3D.create(col*step, row*step, zHeight);
+                                lines.addByTwoPoints(pt1,pt2);
                             }
                             else {
                                 if (row > 0) {
-                                    var pt1 = adsk.core.Point3D.create(0, (row-1)*step, imageHeightData[(row-1)*img.height]);
-                                    var pt2 = adsk.core.Point3D.create(0, row*step, zHeight);
-                                    var vertLine = lines.addByTwoPoints(pt1,pt2);
+                                    pt1 = adsk.core.Point3D.create(0, (row-1)*step, imageHeightData[(row-1)*img.height]);
+                                    pt2 = adsk.core.Point3D.create(0, row*step, zHeight);
+                                    lines.addByTwoPoints(pt1,pt2);
                                 }
                             }
                         }
@@ -483,23 +473,39 @@ For example, on a Mac the folder is located in:
             return;
         }
 
+        var imgFilename = dlg.filename;
+
         // Holds height data from image
         var imageHeightData = null;
 
         // Holds loaded image.
-        var img = new Image();
+        var theImage = new Image();
 
-        // Start loading the image specified.  It should be fully loaded by the
-        // time the settings dialog is closed.  If not then an onload() callback
-        // will need to implemented.
-        img.src = dlg.filename;
+        var imgData = adsk.readFile(imgFilename);
+        if (!imgData) {
+            ui.messageBox("Unable to load the image file: " + imgFilename);
+        }
+        else {
 
-        // Create and run command
-        var command = createCommandDefinition();
-        var commandCreatedEvent = command.commandCreated;
-        commandCreatedEvent.add(onCommandCreated);
+            // Get extension of filename
+            var imgFileExt = imgFilename.split('.').pop().toLowerCase();
+            if (imgFileExt === "jpg") {
+                imgFileExt = "jpeg";
+            }
 
-        command.execute();
+            // Convert binary back to base64
+            var imgDataBase64 = "data:image/"+imgFileExt+";base64," + adsk.toBase64(imgData);
+
+            // and load it into the image
+            theImage.src = imgDataBase64;
+
+            // Create and run command
+            var command = createCommandDefinition();
+            var commandCreatedEvent = command.commandCreated;
+            commandCreatedEvent.add(onCommandCreated);
+
+            command.execute();
+        }
     }
     catch (e) {
         ui.messageBox('Image2Surface Script Failed : ' + (e.description ? e.description : e));
