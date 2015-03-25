@@ -4,6 +4,8 @@ This is an [Autodesk Fusion 360](http://fusion360.autodesk.com/) script that's u
 
 ![Moon Mesh](./resources/MoonMesh.png) ![Moon T-Spline](./resources/MoonTSpline.png)
 
+NOTE NOTE NOTE: There's an issue with this running on Windows.  Mac currently works.  Fix in progress.
+
 ## Installation
 
 Copy the "Fusion360Image2Surface" folder into your Fusion 360 "My Scripts" folder. You may find this folder using the following steps:
