@@ -2,7 +2,23 @@
 
 This is an [Autodesk Fusion 360](http://fusion360.autodesk.com/) script that's used for generating surfaces from images.
 
-![Moon Mesh](./resources/MoonMesh.png) ![Moon T-Spline](./resources/MoonTSpline.png)
+## ![Moon - Height map](./resources/MoonHeightmap.jpg) Moon Surface Example
+
+This surface was created from a small height map of a crater on Earth's moon. The first image is the mesh created from the script.The second is the T-Spline surface created from the mesh.
+
+![Moon - Mesh generated from Image2Surface](./resources/MoonMesh.png)
+
+![Moon - T-Spline created from mesh](./resources/MoonTSpline.png)
+
+## ![Penny - Height map](./resources/penny_depthmap_500-sm.jpg) Milled Penny Example
+
+This is a penny that was milled out of a 4"x4" block of 6061 Aluminum. The surface was created from a height map of a penny. The mesh was then converted to a T-Spline then merged onto a cube.  That model was brought into the CAM environment where the various milling operations were defined.  Finally, it was milled on a Haas CNC vertical milling machine.
+
+![Penny - Milled from 4"x4" block of 6061 Aluminum](./resources/Penny_CNC_Size_-_IMG_3813-sm.jpg)
+
+![Penny - Adaptive clearing of surface](./resources/Penny_F360CAMAdaptive3D.jpg)
+
+![Penny - Morphed spiral milling](./resources/Penny_F360CAMMorphedSpiral3D.jpg)
 
 ## Installation
 
