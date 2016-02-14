@@ -27,7 +27,7 @@ For example, on a Mac the folder is located in:
 */
 
 /*globals adsk*/
-(function () {
+function run(context) {
 
     "use strict";
 
@@ -468,47 +468,50 @@ For example, on a Mac the folder is located in:
         var dlg = ui.createFileDialog();
         dlg.title = 'Select Image File';
         dlg.filter = 'Image Files (*.jpeg;*.jpg;*.png;*.gif);;All Files (*.*)';
-        if (dlg.showOpen() !== adsk.core.DialogResults.DialogOK) {
-            adsk.terminate();
-            return;
-        }
+        if (dlg.showOpen() == adsk.core.DialogResults.DialogOK) {
+            
+            var imgFilename = dlg.filename;
 
-        var imgFilename = dlg.filename;
+            // Holds height data from image
+            var imageHeightData = null;
 
-        // Holds height data from image
-        var imageHeightData = null;
+            // Holds loaded image.
+            var theImage = new Image();
 
-        // Holds loaded image.
-        var theImage = new Image();
+            var imgData = adsk.readFile(imgFilename);
+            if (!imgData) {
+                ui.messageBox("Unable to load the image file: " + imgFilename);
+            }
+            else {
 
-        var imgData = adsk.readFile(imgFilename);
-        if (!imgData) {
-            ui.messageBox("Unable to load the image file: " + imgFilename);
+                // Get extension of filename
+                var imgFileExt = imgFilename.split('.').pop().toLowerCase();
+                if (imgFileExt === "jpg") {
+                    imgFileExt = "jpeg";
+                }
+
+                // Convert binary back to base64
+                var imgDataBase64 = "data:image/"+imgFileExt+";base64," + adsk.toBase64(imgData);
+
+                // and load it into the image
+                theImage.src = imgDataBase64;
+
+                // Create and run command
+                var command = createCommandDefinition();
+                var commandCreatedEvent = command.commandCreated;
+                commandCreatedEvent.add(onCommandCreated);
+
+                command.execute();
+            }
         }
         else {
-
-            // Get extension of filename
-            var imgFileExt = imgFilename.split('.').pop().toLowerCase();
-            if (imgFileExt === "jpg") {
-                imgFileExt = "jpeg";
-            }
-
-            // Convert binary back to base64
-            var imgDataBase64 = "data:image/"+imgFileExt+";base64," + adsk.toBase64(imgData);
-
-            // and load it into the image
-            theImage.src = imgDataBase64;
-
-            // Create and run command
-            var command = createCommandDefinition();
-            var commandCreatedEvent = command.commandCreated;
-            commandCreatedEvent.add(onCommandCreated);
-
-            command.execute();
+            adsk.terminate();
         }
     }
     catch (e) {
-        ui.messageBox('Image2Surface Script Failed : ' + (e.description ? e.description : e));
-        adsk.terminate();
+        if (ui) {
+            ui.messageBox('Image2Surface Script Failed : ' + (e.description ? e.description : e));
+            adsk.terminate();
+        }
     }
-}());
+}
