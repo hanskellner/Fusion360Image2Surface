@@ -65,8 +65,9 @@ The script should be ready to run.
     - "Mesh Body" : mesh that can be converted to a T-Spline
     - "Sketch Points" : sketch containing points for each pixel
     - "Sketch Lines" : sketch containing lines simulating a mesh (warning SLOW)
-  - Length per pixel : The distance between vertices, one vertex per pixel
+  - Mesh stepover length : The length of each face of the mesh
   - Max surface height : The maximum height the normalized image values are mapped to.
+  - Invert image : Invert the height values of the image.  White is low and black is high.
   - Export format : Select one of the following
     - "OBJ" : a Wavefront OBJ file containing the mesh (quad faces)
     - "STL" : a STereoLithography file containing the mesh (triangle faces only)
@@ -75,7 +76,7 @@ The script should be ready to run.
 
 Once the mesh or sketch is created it will be added to the drawing. You might have to "fit" the view to see it.
 
-If you have created a mesh then it's useful to convert it to a T-Spline or BRep for further modification.
+If you have created a mesh then it's useful to convert it to a T-Spline or BRep for further modification.  Note, Fusion has a limitation on the size of the mesh that can be converted.  It's around 10K faces.
 
 - Mesh to T-Spline
 
@@ -105,4 +106,4 @@ More examples posted on my [Fusion 360 project gallery](https://fusion360.autode
 
 ## Issues
 
-- none
+- 2016.02 : Fusion 360 has a 10K limitation on mesh size when converting to a T-Spline.  Any larger and it fails.

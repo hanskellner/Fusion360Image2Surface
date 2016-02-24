@@ -101,10 +101,13 @@ function run(context) {
             styleInput.listItems.add('Sketch Lines',false);
 
             var initialValLenPerPixel = adsk.core.ValueInput.createByReal(0.1);
-            inputs.addValueInput('lenPerPixel', 'Length per pixel', 'mm' , initialValLenPerPixel);
+            inputs.addValueInput('lenPerPixel', 'Mesh stepover length', 'mm' , initialValLenPerPixel);
 
             var initialValH = adsk.core.ValueInput.createByReal(1.0);
             inputs.addValueInput('maxHeight', 'Max surface height', 'mm' , initialValH);
+
+            var invertImage = adsk.core.ValueInput.createByReal(1.0);
+            inputs.addBoolValueInput('invertImage', 'Invert Image', true);
 
             var exportFormatInput = inputs.addDropDownCommandInput('exportFormat', 'Export format', adsk.core.DropDownStyles.TextListDropDownStyle );
             exportFormatInput.listItems.add('OBJ',true);
@@ -124,7 +127,7 @@ function run(context) {
             var command = adsk.core.Command(args.firingEvent.sender);
             var inputs = command.commandInputs;
 
-            var styleInput, lenPerPixelInput, maxHeightInput, exportFormatInput;
+            var styleInput, lenPerPixelInput, maxHeightInput, invertImageInput, exportFormatInput;
 
             // REVIEW: Problem with a problem - the inputs are empty at this point. We
             // need access to the inputs within a command during the execute.
@@ -139,12 +142,15 @@ function run(context) {
                 else if (input.id === 'maxHeight') {
                     maxHeightInput = adsk.core.ValueCommandInput(input);
                 }
+                else if (input.id === 'invertImage') {
+                    invertImageInput = adsk.core.BoolValueCommandInput(input);
+                }
                 else if (input.id === 'exportFormat') {
                     exportFormatInput = adsk.core.DropDownCommandInput(input);
                 }
             }
 
-            if (!styleInput || !lenPerPixelInput || !maxHeightInput || !exportFormatInput) {
+            if (!styleInput || !lenPerPixelInput || !maxHeightInput || !invertImageInput || !exportFormatInput) {
                 ui.messageBox("One of the inputs does not exist.");
                 return;
             }
@@ -155,6 +161,7 @@ function run(context) {
                 exportFormat: EXPORT_FORMAT.OBJ,
                 lenPerPixel: 1,         // mm
                 maxSurfaceHeight: 10,   // mm
+                invertImage: false,
                 scale: 1
             };
 
@@ -175,6 +182,8 @@ function run(context) {
                 ui.messageBox("Invalid height: must be > 0");
                 return;
             }
+
+            params.invertImage = invertImageInput.value;
 
             params.exportFormat = exportFormatInput.selectedItem.index;
             if (params.exportFormat < 0 || params.exportFormat > EXPORT_FORMAT.STL) {
@@ -214,7 +223,7 @@ function run(context) {
     }
 
     // Returns an array containing height data normalized to the specified height value.
-    function getHeightData(img, maxSurfaceHeight) {
+    function getHeightData(img, maxSurfaceHeight, invertImage) {
 
         if (!maxSurfaceHeight) {
             maxSurfaceHeight = 10;
@@ -261,8 +270,14 @@ function run(context) {
 
             // Normalize the values
             for (var i = 0; i < heightDataSize; ++i) {
-                var h = heightData[i];
-                heightData[i] = maxSurfaceHeight * ((h - minVal) / valRange);
+                var heightVal = heightData[i];
+                var normHeightVal = ((heightVal - minVal) / valRange);
+
+                if (invertImage) {
+                    normHeightVal = 1.0 - normHeightVal;
+                }
+
+                heightData[i] = maxSurfaceHeight * normHeightVal;
             }
         }
 
@@ -315,7 +330,7 @@ function run(context) {
 
         // Get array of height data
         if (!imageHeightData) {
-            imageHeightData = getHeightData(img, params.maxSurfaceHeight);
+            imageHeightData = getHeightData(img, params.maxSurfaceHeight, params.invertImage);
         }
 
         if (!imageHeightData || imageHeightData.length < 1) {
@@ -469,7 +484,7 @@ function run(context) {
         dlg.title = 'Select Image File';
         dlg.filter = 'Image Files (*.jpeg;*.jpg;*.png;*.gif);;All Files (*.*)';
         if (dlg.showOpen() == adsk.core.DialogResults.DialogOK) {
-            
+
             var imgFilename = dlg.filename;
 
             // Holds height data from image
