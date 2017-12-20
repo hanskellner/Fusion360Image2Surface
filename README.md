@@ -2,6 +2,10 @@
 
 This is an [Autodesk Fusion 360](http://fusion360.autodesk.com/) script that's used for generating surfaces from images.
 
+## JavaScript Add-In Support in Fusion 360
+
+Note that JavaScript development (editing/debugging) is no longer supported within Fusion 360. But existing JavaScript add-ins, such as *image2surface* can still be installed and run.
+
 ## ![Moon - Height map](./resources/MoonHeightmap.jpg) Moon Surface Example
 
 This surface was created from a small height map of a crater on Earth's moon. The first image is the mesh created from the script.The second is the T-Spline surface created from the mesh.
@@ -25,6 +29,10 @@ This is a penny that was milled out of a 4"x4" block of 6061 Aluminum. The surfa
 Please see the most recent install instruction here:
 
 https://knowledge.autodesk.com/support/fusion-360/troubleshooting/caas/sfdcarticles/sfdcarticles/How-to-install-an-ADD-IN-and-Script-in-Fusion-360.html
+
+And here is a Screencast video which shows how to install the script:
+
+[Load an existing Javascript script in Fusion](https://knowledge.autodesk.com/community/screencast/b5f14cfe-e117-496d-a767-0ed801ee9b48)
 
 ## Usage
 
