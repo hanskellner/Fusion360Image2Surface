@@ -1,7 +1,69 @@
 <!DOCTYPE html>
 <html>
-<script type="text/javascript" charset="UTF-8" src="Utils.js"></script>
-<script type="text/javascript" charset="UTF-8" src="Image2Surface.js"></script>
-<body>
-</body>
+    <head>
+        <title>Image 2 Surface</title>
+        <link href="css/style.css" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+        <div id="content">
+            <div id="dropzone" class="dropzone">
+                <span class="dropzone">Drop Image Here</span>
+            </div>
+        </div>
+        <div id="controls">
+            <h1>Image 2 Surface</h1>
+            <p>
+                <p>Generate a surface and send to Fusion 360:</p>
+                <button type='button' onclick='sendInfoToFusion()'>Generate Surface</button>
+                <p>Clear current image and add a new image:</p>
+                <button type='button' onclick='clearImage()'>Clear Image</button>
+            </p>
+            <h3>Image Information</h3>
+            <ul>
+                <li>FileName: <span id="imagefilename"></span></li>
+                <li>Dimensions: <span id="imagedim">0x0</span></li>
+            </ul>
+            <h3>Surface Information</h3>
+            <ul>
+                <li>Dimensions: <span id="surfacedim"></span></li>
+            </ul>
+            <h3>Help</h3>
+            <ul>
+                <li>View Rotate: Left mouse button</li>
+                <li>View Pan: Middle mouse button</li>
+                <li>View Zoom: Mousewheel</li>
+                <li>Adjust parameters to define surface mesh</li>
+            </ul>
+            <div><small>https://github.com/hanskellner/Fusion360Image2Surface</small></div>
+        </div>
+
+        <script src="js/Three.js"></script>
+        <script src="js/Detector.js"></script>
+        <script src="js/RequestAnimationFrame.js"></script>
+        <script src="js/TrackballControls.js"></script>
+        <script src="js/jquery.min.js"></script>
+        <script src="js/jquery.mousewheel.min.js"></script>
+        <script src="js/DAT.GUI.min.js"></script>
+        <script src="js/Utils.js"></script>
+        <script src="js/image2surface.js"></script>
+
+    </body>
+    <script>
+        
+        function sendInfoToFusion() {
+            var meshOBJStr = createMeshOBJString();
+
+            // Package up surface as JSON and send to Fusion
+            var args = {
+                obj : meshOBJStr
+            };
+
+            adsk.fusionSendData('send', JSON.stringify(args));
+        }
+
+        function clearImage() {
+            clearImageLoaded();
+        }
+
+    </script>
 </html>

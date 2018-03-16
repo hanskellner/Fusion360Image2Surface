@@ -1,4 +1,4 @@
-Copyright (C) 2015 Hans Kellner
+Copyright (C) 2015-2018 Hans Kellner
 https://github.com/hanskellner/Fusion360Image2Surface
 
 Licensed under The MIT License

@@ -1,14 +1,13 @@
 {
 	"autodeskProduct":	"Fusion360",
-	"type":	"script",
-	"id":	"d2b25272-6d59-4912-ad5c-dd7ad4b333b7",
+	"type":	"addin",
+	"id":	"8292ed75-c934-42d6-a7b3-65ac1c3a4102",
 	"author":	"Hans Kellner",
 	"description":	{
 		"":	"This is an Autodesk Fusion 360 script that's used for generating surfaces from images."
 	},
-	"version":	"1.0",
+	"version":	"2.0",
 	"runOnStartup":	false,
 	"supportedOS":	"windows|mac",
-	"autodeskLibraries":	["application", "dashboard", "geometry", "materials", "userInterface", "utilities", "bRep", "components", "construction", "features", "fusion", "meshBody", "meshData", "sketch", "tSpline", "operations", "cam"],
 	"editEnabled":	true
 }
