@@ -2,6 +2,8 @@
 
 This is an [Autodesk Fusion 360](http://fusion360.autodesk.com/) add-in that's used for generating surfaces from images.
 
+![Image2Surface](./Resources/image2surface/image2surface-tooltip.png)
+
 ## ![Moon - Height map](./Resources/MoonHeightmap.jpg) Moon Surface Example
 
 This surface was created from a small height map of a crater on Earth's moon. The first image is the mesh created from the script. The second is the T-Spline surface created from the mesh.
