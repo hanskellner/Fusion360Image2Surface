@@ -4,7 +4,7 @@
 #MIT License: See https://github.com/hanskellner/Fusion360Image2Surface/LICENSE.md
 
 import adsk.core, adsk.fusion, adsk.cam, traceback
-import json
+import json, tempfile, platform
 
 # global set of event handlers to keep them referenced for the duration of the command
 handlers = []
@@ -109,12 +109,13 @@ class MyHTMLEventHandler(adsk.core.HTMLEventHandler):
             objStr = data['obj']
             objStrLen = len(data['obj'])
 
-            strFilename = "image2surface.obj"
-
             if objStrLen > 0:
-                output = open(strFilename, 'w') # re-use file over and over
-                output.writelines(objStr)
-                output.close()
+
+                fp = tempfile.NamedTemporaryFile(mode='w', suffix='.obj', delete=False)
+                fp.writelines(objStr)
+                fp.close()
+                objFilePath = fp.name
+                print ("Generated OBJ File: " + objFilePath)
 
                 global _app
 
@@ -134,7 +135,7 @@ class MyHTMLEventHandler(adsk.core.HTMLEventHandler):
                 baseFeat.startEdit()
 
                 # Add a mesh body by importing this data (OBJ) file.
-                meshList = rootComp.meshBodies.add(strFilename, adsk.fusion.MeshUnits.MillimeterMeshUnit, baseFeat)
+                meshList = rootComp.meshBodies.add(objFilePath, adsk.fusion.MeshUnits.MillimeterMeshUnit, baseFeat)
                 if meshList.count > 0:
 
                     # JIRA: https://jira.autodesk.com/browse/UP-37174
@@ -162,7 +163,7 @@ class MyHTMLEventHandler(adsk.core.HTMLEventHandler):
                     vp = _app.activeViewport
                     vp.fit()
                 else:
-                    _ui.messageBox('Failed to generate mesh body from file: {}'.format(strFilename))
+                    _ui.messageBox('Failed to generate mesh body from file: {}'.format(objFilePath))
 
                 # Need to finish the base feature edit
                 baseFeat.finishEdit()
