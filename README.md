@@ -110,4 +110,5 @@ More examples posted on my [Fusion 360 project gallery](https://fusion360.autode
 
 ## Issues
 
+- 2018.03 : Need to add "Upload Image" button and file browser as alternative to D&D of image
 - 2016.02 : Fusion 360 has a 10K limitation on mesh size when converting to a BREP.  Any larger and it fails.
