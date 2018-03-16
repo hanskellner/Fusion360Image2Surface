@@ -26,7 +26,15 @@ Please see the most recent add-in install instructions here:
 
 https://knowledge.autodesk.com/support/fusion-360/troubleshooting/caas/sfdcarticles/sfdcarticles/How-to-install-an-ADD-IN-and-Script-in-Fusion-360.html
 
-Please install this as an add-in and not a script.
+Download the archive file (ZIP) from Github by clicking on the "Clone or download" button and then selecting "Download ZIP":
+
+![Github Download ZIP](./Resources/GitHubDownloadZIP.png)
+
+Unarchive this file into the Addins folder and once created, rename the folder created from the Zip archive name "Fusion360Image2Surface-master.zip" to "Image2Surface":
+
+![Fusion 360 Addins Folder](./Resources/Fusion360AddinsFolder.png)
+
+You will then be able to use the Fusion 360 Scripts and Addins Manager to add this folder, and thus the addin, to Fusion.
 
 ## Usage
 
