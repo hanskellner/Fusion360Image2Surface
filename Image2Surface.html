@@ -58,7 +58,10 @@
                 obj : meshOBJStr
             };
 
-            adsk.fusionSendData('send', JSON.stringify(args));
+            // DEFECT: This works on Mac but not Windows (undefined)
+            //adsk.fusionSendData('send', JSON.stringify(args));
+            // Use the wrapper function
+            neutronJavaScriptObject.executeQuery('send', JSON.stringify(args));
         }
 
         function clearImage() {
