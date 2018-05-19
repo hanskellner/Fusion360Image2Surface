@@ -13,10 +13,8 @@
         <div id="controls">
             <h1>Image 2 Surface</h1>
             <p>
-                <p>Generate a surface and send to Fusion 360:</p>
-                <button type='button' onclick='sendInfoToFusion()'>Generate Surface</button>
-                <p>Clear current image and add a new image:</p>
-                <button type='button' onclick='clearImage()'>Clear Image</button>
+                <p>Load an image by Dragging &amp; Dropping onto view. Or load from file:</p>
+                <input type='file' id='getimagefile' />
             </p>
             <h3>Image Information</h3>
             <ul>
@@ -27,6 +25,10 @@
             <ul>
                 <li>Dimensions: <span id="surfacedim"></span></li>
             </ul>
+            <p>Generate a surface and send to Fusion 360:</p>
+            <button type='button' onclick='sendInfoToFusion()'>Generate Surface</button>
+            <p>Clear current image:</p>
+            <button type='button' onclick='clearImage()'>Clear Image</button>        
             <h3>Help</h3>
             <ul>
                 <li>View Rotate: Left mouse button</li>

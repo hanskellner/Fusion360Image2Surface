@@ -86,34 +86,16 @@ $(document).ready( function() {
                 e.preventDefault();
                 
                 var file = event.dataTransfer.files[0];
-                var fileType = file.type;
-                if (!fileType.match(/image\/\w+/)) {
-                    alert("Only image files supported.");
-                    return;
-                }
-
-                var reader = new FileReader();
-                reader.onload = function() {
-
-                    _inputImage = new Image();
-                    _inputImage.src = reader.result;
-
-                    _inputImage.onload = function() {
-                        onImageLoaded();
-                    };
-                };
-
-                reader.readAsDataURL(file);
-                
-                _imageFileName = file.name.replace(/^.*[\\\/]/, '');	// Just want filename, no path
-                $('#imagefilename').html(_imageFileName);
+                loadImageFile(file);
             }
         });
 
         enableDropZone(true);
+
+        document.getElementById('getimagefile').addEventListener('change', readImageURL, true);
     }
 
-    // stop the user getting a text cursor
+// stop the user getting a text cursor
     document.onselectstart = function() {
         return false;
     };
@@ -166,9 +148,56 @@ $(document).ready( function() {
     animate();
 });
 
+function resetGUIOptions() {
+    _guiOptions.pixelStep = 5;
+    _guiOptions.meshStep = 1;
+    _guiOptions.maxHeight = 10;
+    _guiOptions.invert = false;
+
+    // Iterate over all controllers
+    for (var i in _gui.__controllers) {
+        _gui.__controllers[i].updateDisplay();
+    }
+}
+
+function readImageURL() {
+    var file = document.getElementById("getimagefile").files[0];
+    loadImageFile(file);
+}
+
+function loadImageFile(file) {
+    if (file == null)
+        return;
+
+    var fileType = file.type;
+    if (!fileType.match(/image\/\w+/)) {
+        alert("Only image files supported.");
+        return;
+    }
+
+    var reader = new FileReader();
+    reader.onload = function() {
+
+        _inputImage = new Image();
+        _inputImage.src = reader.result;
+
+        _inputImage.onload = function() {
+            onImageLoaded();
+        };
+    };
+
+    reader.readAsDataURL(file);
+    
+    _imageFileName = file.name.replace(/^.*[\\\/]/, '');	// Just want filename, no path
+    $('#imagefilename').html(_imageFileName);
+}
+
 // Called from html page
 function clearImageLoaded() {
     _inputImage = null;
+
+    $('#imagefilename').html('');
+    $('#imagedim').html('');
 
     if (_lineGroup != null) {
         _lineHolder.remove(_lineGroup);
@@ -178,11 +207,13 @@ function clearImageLoaded() {
     enableDropZone(true);
 
     // Reset camera/controls
-    _camera.position.z = 600;
+    _camera.position.z = 400;
     _controls.reset();
 }
 
 function onImageLoaded() {
+
+    resetGUIOptions();
 
     // load image into canvas pixels
     _imageWidth = _inputImage.width;
@@ -208,6 +239,9 @@ function onImageLoaded() {
  * Create Lines from image
  */
 function createLines() {
+
+    if (_inputImage == null)
+        return;
 
     if (_lineGroup)
         _lineHolder.remove(_lineGroup);
