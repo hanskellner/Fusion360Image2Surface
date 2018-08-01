@@ -198,6 +198,9 @@ def run(context):
         cntrl = panel.controls.itemById('showImage2SurfacePalette')
         if not cntrl:
             panel.controls.addCommand(showPaletteCmdDef)
+       
+        if context['IsApplicationStartup'] is False:
+            _ui.messageBox('The "Image2Surface" command has been added\nto the ADD-INS panel dropdown of the MODEL workspace.\n\nTo run the command, select the ADD-INS dropdown\nthen select "Show Image 2 Surface".')
     except:
         if _ui:
             _ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))

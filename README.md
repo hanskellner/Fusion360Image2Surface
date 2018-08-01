@@ -36,12 +36,12 @@ Unarchive this file into the Addins folder and once created, rename the folder c
 
 ![Fusion 360 Addins Folder](./Resources/Fusion360AddinsFolder.png)
 
-You will then be able to use the Fusion 360 Scripts and Addins Manager to add this folder, and thus the addin, to Fusion.
+You will then be able to use the Fusion 360 Scripts and Addins Manager to add this folder, and thus the addin, to Fusion.  Note, select the "Run on Startup" checkbox if you would like the add-in automatically started when Fusion 360 starts up.  This is useful if you will be using the add-in often.
 
 ## Usage
 
 1. Enter the Model environment
-2. Run the Image2Surface add-in from the Scripts and Add-Ins Manager
+2. Run the Image2Surface add-in from the Scripts and Add-Ins Manager. Note, select the "Run on Startup" checkbox if you would like the add-in automatically started when Fusion 360 starts up and avoid having to manually run each time.
 
   ![Run Add-In](./Resources/ScriptsAndAdd-Ins.png)
 
