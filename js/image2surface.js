@@ -24,6 +24,7 @@ var _inputImage,
     _gui,
     _guiOptions;
 
+
 var GuiOptions = function() {
     this.pixelStep = 5;	// pixel step over in the image
     this.meshStep = 1;	// amount in mms to step over mesh per pixel
@@ -41,6 +42,8 @@ $(document).ready( function() {
     _gui.add(_guiOptions, 'meshStep', 0.1, 25, 1).name('Stepover (mm)').step(1).onChange( createLines );
     _gui.add(_guiOptions, 'maxHeight', 1, 50, 10).name('Max Height (mm)').step(1).onChange( createLines );
     _gui.add(_guiOptions, 'invert').name('Invert Heights').onChange( createLines );
+    
+    _guiOptions.smoothing = true;
     
     $(window).bind('resize', onWindowResize);
 
@@ -398,6 +401,26 @@ function getColor(x, y) {
         b: _pixels[base + 2],
         a: _pixels[base + 3]	// REVIEW: Use alpha in calc?
     };
+    if (_guiOptions.smoothing&&x>0&&y>0&&x<_imageWidth-1&&y<_imageHeight-1) {
+    	//console.log( 'X:', x );
+
+    	var left = ((Math.floor(y) * _imageWidth + Math.floor(x-1)) * 4);
+    	var leftup = ((Math.floor(y-1) * _imageWidth + Math.floor(x-1)) * 4);
+    	var leftdown = ((Math.floor(y+1) * _imageWidth + Math.floor(x-1)) * 4);
+    	var right = ((Math.floor(y) * _imageWidth + Math.floor(x+1)) * 4);
+    	var rightup = ((Math.floor(y-1) * _imageWidth + Math.floor(x+1)) * 4);
+    	var rightdown = ((Math.floor(y+1) * _imageWidth + Math.floor(x+1)) * 4);
+    	var up = ((Math.floor(y-1) * _imageWidth + Math.floor(x)) * 4);
+    	var down = ((Math.floor(y+1) * _imageWidth + Math.floor(x)) * 4);
+
+    	c.r+=_pixels[left+0]+_pixels[right+0]+_pixels[up+0]+_pixels[down+0]+_pixels[leftup+0]+_pixels[leftdown+0]+_pixels[rightup+0]+_pixels[rightdown+0];
+    	c.g+=_pixels[left+1]+_pixels[right+1]+_pixels[up+1]+_pixels[down+1]+_pixels[leftup+1]+_pixels[leftdown+1]+_pixels[rightup+1]+_pixels[rightdown+1];
+    	c.b+=_pixels[left+2]+_pixels[right+2]+_pixels[up+2]+_pixels[down+2]+_pixels[leftup+2]+_pixels[leftdown+2]+_pixels[rightup+2]+_pixels[rightdown+2];
+
+	c.r/=9;
+	c.g/=9;
+	c.b/=9;
+    }
 
     // Init with rgb (0-1)
     return new THREE.Color(c.r/255, c.g/255, c.b/255);
