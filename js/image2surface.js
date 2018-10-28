@@ -28,8 +28,9 @@ var _inputImage,
 var GuiOptions = function() {
     this.pixelStep = 5;	// pixel step over in the image
     this.meshStep = 1;	// amount in mms to step over mesh per pixel
-    this.maxHeight = 10; // max mesh height in mms for brightest image color
+    this.maxHeight = 5; // max mesh height in mms for brightest image color
     this.invert = false; // true to invert height values (dark == highest)
+    this.smoothing = true; //turn on smoothing
 };
 
 // Initialize the page
@@ -38,12 +39,11 @@ $(document).ready( function() {
     _gui = new dat.GUI();
     
     _guiOptions = new GuiOptions();
-    _gui.add(_guiOptions, 'pixelStep', 1, 50, 5).name('Pixels to Skip').step(1).onChange( createLines );
-    _gui.add(_guiOptions, 'meshStep', 0.1, 25, 1).name('Stepover (mm)').step(1).onChange( createLines );
-    _gui.add(_guiOptions, 'maxHeight', 1, 50, 10).name('Max Height (mm)').step(1).onChange( createLines );
+    _gui.add(_guiOptions, 'pixelStep', 1.00, 50.00, 5.00).name('Pixels to Skip').step(0.01).onChange( createLines );
+    _gui.add(_guiOptions, 'meshStep', 0.10, 25.00, 1.00).name('Stepover (mm)').step(0.01).onChange( createLines );
+    _gui.add(_guiOptions, 'maxHeight', 1.00, 25.00, 5.00).name('Max Height (mm)').step(0.01).onChange( createLines );
     _gui.add(_guiOptions, 'invert').name('Invert Heights').onChange( createLines );
-    
-    _guiOptions.smoothing = true;
+    _gui.add(_guiOptions, 'smoothing').name('Smooth').onChange( createLines );
     
     $(window).bind('resize', onWindowResize);
 
@@ -154,8 +154,9 @@ $(document).ready( function() {
 function resetGUIOptions() {
     _guiOptions.pixelStep = 5;
     _guiOptions.meshStep = 1;
-    _guiOptions.maxHeight = 10;
+    _guiOptions.maxHeight = 5;
     _guiOptions.invert = false;
+    _guiOptions.smoothing = true; //turn on smoothing
 
     // Iterate over all controllers
     for (var i in _gui.__controllers) {
