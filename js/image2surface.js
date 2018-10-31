@@ -31,6 +31,7 @@ var GuiOptions = function() {
     this.maxHeight = 5; // max mesh height in mms for brightest image color
     this.invert = false; // true to invert height values (dark == highest)
     this.smoothing = true; //turn on smoothing
+    this.absolute = false;
 };
 
 // Initialize the page
@@ -44,6 +45,7 @@ $(document).ready( function() {
     _gui.add(_guiOptions, 'maxHeight', 1.00, 25.00, 5.00).name('Max Height (mm)').step(0.01).onChange( createLines );
     _gui.add(_guiOptions, 'invert').name('Invert Heights').onChange( createLines );
     _gui.add(_guiOptions, 'smoothing').name('Smooth').onChange( createLines );
+    _gui.add(_guiOptions, 'absolute').name('Absolute (B&W)').onChange( createLines );
     
     $(window).bind('resize', onWindowResize);
 
@@ -157,6 +159,7 @@ function resetGUIOptions() {
     _guiOptions.maxHeight = 5;
     _guiOptions.invert = false;
     _guiOptions.smoothing = true; //turn on smoothing
+    _guiOptions.absolute = false; 
 
     // Iterate over all controllers
     for (var i in _gui.__controllers) {
@@ -427,9 +430,17 @@ function getColor(x, y) {
     return new THREE.Color(c.r/255, c.g/255, c.b/255);
 }
 
+
 //return pixel brightness between 0 and 1 based on human perceptual bias
 function getBrightness(c) {
-    var brightness = ( 0.34 * c.r + 0.5 * c.g + 0.16 * c.b );
+    var brightness = 0.0
+    if(_guiOptions.absolute) {
+    	brightness =  (c.r + c.g + c.b)/3.0;
+    } else {
+    	brightness = ( 0.34 * c.r + 0.5 * c.g + 0.16 * c.b );
+    }
+//    	console.log('r:' +c.r + 'g:' + c.g + 'b:' + c.b);
+//	console.log(brightness);
     if (_guiOptions.invert)
         brightness = 1.0 - brightness;
     return brightness;
