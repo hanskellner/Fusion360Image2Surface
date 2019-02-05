@@ -24,11 +24,14 @@ var _inputImage,
     _gui,
     _guiOptions;
 
+
 var GuiOptions = function() {
     this.pixelStep = 5;	// pixel step over in the image
     this.meshStep = 1;	// amount in mms to step over mesh per pixel
-    this.maxHeight = 10; // max mesh height in mms for brightest image color
+    this.maxHeight = 5; // max mesh height in mms for brightest image color
     this.invert = false; // true to invert height values (dark == highest)
+    this.smoothing = true; //turn on smoothing
+    this.absolute = false;
 };
 
 // Initialize the page
@@ -37,10 +40,12 @@ $(document).ready( function() {
     _gui = new dat.GUI();
     
     _guiOptions = new GuiOptions();
-    _gui.add(_guiOptions, 'pixelStep', 1, 50, 5).name('Pixels to Skip').step(1).onChange( createLines );
-    _gui.add(_guiOptions, 'meshStep', 0.1, 25, 1).name('Stepover (mm)').step(1).onChange( createLines );
-    _gui.add(_guiOptions, 'maxHeight', 1, 50, 10).name('Max Height (mm)').step(1).onChange( createLines );
+    _gui.add(_guiOptions, 'pixelStep', 1.00, 50.00, 5.00).name('Pixels to Skip').step(0.01).onChange( createLines );
+    _gui.add(_guiOptions, 'meshStep', 0.10, 25.00, 1.00).name('Stepover (mm)').step(0.01).onChange( createLines );
+    _gui.add(_guiOptions, 'maxHeight', 1.00, 25.00, 5.00).name('Max Height (mm)').step(0.01).onChange( createLines );
     _gui.add(_guiOptions, 'invert').name('Invert Heights').onChange( createLines );
+    _gui.add(_guiOptions, 'smoothing').name('Smooth').onChange( createLines );
+    _gui.add(_guiOptions, 'absolute').name('Absolute (B&W)').onChange( createLines );
     
     $(window).bind('resize', onWindowResize);
 
@@ -151,8 +156,10 @@ $(document).ready( function() {
 function resetGUIOptions() {
     _guiOptions.pixelStep = 5;
     _guiOptions.meshStep = 1;
-    _guiOptions.maxHeight = 10;
+    _guiOptions.maxHeight = 5;
     _guiOptions.invert = false;
+    _guiOptions.smoothing = true; //turn on smoothing
+    _guiOptions.absolute = false; 
 
     // Iterate over all controllers
     for (var i in _gui.__controllers) {
@@ -398,14 +405,42 @@ function getColor(x, y) {
         b: _pixels[base + 2],
         a: _pixels[base + 3]	// REVIEW: Use alpha in calc?
     };
+    if (_guiOptions.smoothing&&x>0&&y>0&&x<_imageWidth-1&&y<_imageHeight-1) {
+    	//console.log( 'X:', x );
+
+    	var left = ((Math.floor(y) * _imageWidth + Math.floor(x-1)) * 4);
+    	var leftup = ((Math.floor(y-1) * _imageWidth + Math.floor(x-1)) * 4);
+    	var leftdown = ((Math.floor(y+1) * _imageWidth + Math.floor(x-1)) * 4);
+    	var right = ((Math.floor(y) * _imageWidth + Math.floor(x+1)) * 4);
+    	var rightup = ((Math.floor(y-1) * _imageWidth + Math.floor(x+1)) * 4);
+    	var rightdown = ((Math.floor(y+1) * _imageWidth + Math.floor(x+1)) * 4);
+    	var up = ((Math.floor(y-1) * _imageWidth + Math.floor(x)) * 4);
+    	var down = ((Math.floor(y+1) * _imageWidth + Math.floor(x)) * 4);
+
+    	c.r+=_pixels[left+0]+_pixels[right+0]+_pixels[up+0]+_pixels[down+0]+_pixels[leftup+0]+_pixels[leftdown+0]+_pixels[rightup+0]+_pixels[rightdown+0];
+    	c.g+=_pixels[left+1]+_pixels[right+1]+_pixels[up+1]+_pixels[down+1]+_pixels[leftup+1]+_pixels[leftdown+1]+_pixels[rightup+1]+_pixels[rightdown+1];
+    	c.b+=_pixels[left+2]+_pixels[right+2]+_pixels[up+2]+_pixels[down+2]+_pixels[leftup+2]+_pixels[leftdown+2]+_pixels[rightup+2]+_pixels[rightdown+2];
+
+	c.r/=9;
+	c.g/=9;
+	c.b/=9;
+    }
 
     // Init with rgb (0-1)
     return new THREE.Color(c.r/255, c.g/255, c.b/255);
 }
 
+
 //return pixel brightness between 0 and 1 based on human perceptual bias
 function getBrightness(c) {
-    var brightness = ( 0.34 * c.r + 0.5 * c.g + 0.16 * c.b );
+    var brightness = 0.0
+    if(_guiOptions.absolute) {
+    	brightness =  (c.r + c.g + c.b)/3.0;
+    } else {
+    	brightness = ( 0.34 * c.r + 0.5 * c.g + 0.16 * c.b );
+    }
+//    	console.log('r:' +c.r + 'g:' + c.g + 'b:' + c.b);
+//	console.log(brightness);
     if (_guiOptions.invert)
         brightness = 1.0 - brightness;
     return brightness;
