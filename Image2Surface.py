@@ -145,37 +145,22 @@ class MyHTMLEventHandler(adsk.core.HTMLEventHandler):
 
                 # Add a mesh body by importing this data (OBJ) file.
                 meshList = rootComp.meshBodies.add(objFilePath, adsk.fusion.MeshUnits.MillimeterMeshUnit, baseFeat)
+
+                # Need to finish the base feature edit
+                baseFeat.finishEdit()
+
                 if meshList.count > 0:
-
-                    # JIRA: https://jira.autodesk.com/browse/UP-37174
-                    # Translate the mesh back to the origin.
-                    # TODO: Find position of mesh and use for tx back to origin
-                    #vOrigin =  adsk.core.Vector3D.create(0.0, 0.0, 0.0)
-                    #txOrigin = adsk.core.Matrix3D.create()
-                    #txOrigin.translation = vOrigin
-
-                    # Create a move feature
-                    #moveMeshes = adsk.core.ObjectCollection.create()
-                    #moveMeshes.add(meshList.item(0))
-                    #moveFeats = rootComp.features.moveFeatures
-                    #moveFeatureInput = moveFeats.createInput(moveMeshes, txOrigin)
-                    #moveFeats.add(moveFeatureInput)
-                    # END JIRA
-
                     # Success - close palette
                     palette = _ui.palettes.itemById('Image2SurfacePalette')
                     if palette:
                         palette.isVisible = False
                     
-                    # Note: bug above causes mesh to be placed away from origin
-                    # zoom to fit so mesh appears to user
+                    # HACK: bug causes mesh to be placed away from origin
+                    # therefore zoom to fit so mesh appears to user
                     vp = _app.activeViewport
                     vp.fit()
                 else:
                     _ui.messageBox('Failed to generate mesh body from file: {}'.format(objFilePath))
-
-                # Need to finish the base feature edit
-                baseFeat.finishEdit()
 
             else:
                 _ui.messageBox('Failed to generate mesh OBJ')
