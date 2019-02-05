@@ -17,6 +17,15 @@ class ShowPaletteCommandExecuteHandler(adsk.core.CommandEventHandler):
         super().__init__()
     def notify(self, args):
         try:
+
+            global _app, _ui
+            
+            # Verify that in parametric design mode
+            design = _app.activeProduct
+            if design.designType != adsk.fusion.DesignTypes.ParametricDesignType:
+                _ui.messageBox('The "Image2Surface" command must be run in parametric modeling mode.\n\nPlease enable "Capture design history" for your document.')
+                return
+
             # Create and display the palette.
             palette = _ui.palettes.itemById('Image2SurfacePalette')
             if not palette:
