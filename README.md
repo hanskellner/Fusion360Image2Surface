@@ -26,19 +26,23 @@ This is a penny that was milled out of a 4"x4" block of 6061 Aluminum. The surfa
 
 Please see the most recent add-in install instructions here:
 
-https://knowledge.autodesk.com/support/fusion-360/troubleshooting/caas/sfdcarticles/sfdcarticles/How-to-install-an-ADD-IN-and-Script-in-Fusion-360.html
+https://knowledge.autodesk.com/support/fusion-360/troubleshooting/caas/sfdcarticles/sfdcarticles/How-to-install-an-ADD-IN-and-Script-in-Fusion-360.html 
 
 Download the archive file (ZIP) from Github by clicking on the "Clone or download" button and then selecting "Download ZIP":
 
 ![Github Download ZIP](./Resources/GitHubDownloadZIP.png)
 
-Unarchive this file into the Addins folder and once created, rename the folder created from the Zip archive name "Fusion360Image2Surface-master.zip" to "Image2Surface":
+Unarchive this file into the Addins folder and once created, rename the folder created from the Zip archive name "Fusion360Image2Surface-master.zip" to "Fusion360Image2Surface":
 
 ![Fusion 360 Addins Folder](./Resources/Fusion360AddinsFolder.png)
 
 You will then be able to use the Fusion 360 Scripts and Addins Manager to add this folder, and thus the addin, to Fusion.  Note, select the "Run on Startup" checkbox if you would like the add-in automatically started when Fusion 360 starts up.  This is useful if you will be using the add-in often.
 
+The first time you run the Image2Surface add-in, it will add itself to the Add-ins panel dropdown of the Model environment.  It should appear as an entry with the label "Show Image 2 Surface".
+
 ## Usage
+
+**Important: This add-in requires the document to be in parametric modeling mode (i.e. Capturing design history).**
 
 1. Enter the Model environment
 2. Run the Image2Surface add-in from the Scripts and Add-Ins Manager. Note, select the "Run on Startup" checkbox if you would like the add-in automatically started when Fusion 360 starts up and avoid having to manually run each time.
@@ -49,7 +53,7 @@ You will then be able to use the Fusion 360 Scripts and Addins Manager to add th
 
   ![Display Image 2 Surface Palette](./Resources/ShowImage2SurfacePalette.png)
 
-  - Click on the ADD-INS dropdown and then click on the Image 2 Surface menu item.  This should display the palette.
+  - Click on the ADD-INS dropdown and then click on the "Image 2 Surface" menu item.  This should display the palette.
     - If the menu item isn't there then there might have been a problem running the add-in.  Go back to step 2 and try again.
     
   ![Image 2 Surface Palette](./Resources/Image2SurfacePalette.png)
@@ -70,10 +74,18 @@ You will then be able to use the Fusion 360 Scripts and Addins Manager to add th
   ![Image of Parameters](./Resources/ParametersDialog.png)
 
   - In the upper right of the view is small dialog containing parameters that control the mesh:
-    - Pixels to Skip: This is the number of pixels to skip over for each row and column on the source image
-    - Stepover (mm): This is the distance in millimeters between each mesh grid line
-    - Max Height (mm): This is the max height in millimeters of each grid node.  Each node's height is based on the color of the associate image pixel.  Black maps to zero (0) and pure white to the "Max Height" value.
-    - Invert: If checked then black maps to "Max Height" and pure white to zero (0).
+    - Pixels to Skip:
+      - This is the number of pixels to skip over for each row and column on the source image
+    - Stepover (mm):
+      - This is the distance in millimeters between each mesh grid line.
+    - Max Height (mm):
+      - This is the max height in millimeters of each grid node.  Each node's height is based on the color of the associate image pixel.  Black maps to zero (0) and pure white to the "Max Height" value.  Or the inverse if Invert checked.
+    - Invert Heights:
+      - If checked then black maps to "Max Height" and pure white to zero (0).
+    - Smooth:
+      - Apply a smoothing to the values to help reduce sharp ridges.
+    - Absolute (B&W):
+      - If checked then the height is based on the average of the pixel RGB value.  Otherwise, it takes into account the human perceptual bias of the RGB individual values.
 7. Generate a surface/mesh
   - When ready to generate a mesh within the active document, click the "Generate Surface" button.
 
@@ -108,7 +120,11 @@ And here's the t-spline in the CAM environment being used to create toolpaths fo
 
 More examples posted on my [Fusion 360 project gallery](https://fusion360.autodesk.com/users/hans-kellner).
 
+## Trouble Shooting
+
+- Add-in fails to load.  Verify that the add-in has been placed in its own folder within the Addins folder.  If the files are not placed in their own folder then Fusion 360 will tend to fail loadin the add-in.
+- Large images can create large meshes which can cause Fusion 360 to take a very long time to process.  Or the app may just fail.  Try using a smaller resolution image. 
+
 ## Issues
 
-- 2018.03 : Need to add "Upload Image" button and file browser as alternative to D&D of image
 - 2016.02 : Fusion 360 has a 10K limitation on mesh size when converting to a BREP.  Any larger and it fails.
