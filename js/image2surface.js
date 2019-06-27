@@ -40,9 +40,9 @@ $(document).ready( function() {
     _gui = new dat.GUI();
     
     _guiOptions = new GuiOptions();
-    _gui.add(_guiOptions, 'pixelStep', 1.00, 50.00, 5.00).name('Pixels to Skip').step(0.01).onChange( createLines );
-    _gui.add(_guiOptions, 'meshStep', 0.10, 25.00, 1.00).name('Stepover (mm)').step(0.01).onChange( createLines );
-    _gui.add(_guiOptions, 'maxHeight', 1.00, 25.00, 5.00).name('Max Height (mm)').step(0.01).onChange( createLines );
+    _gui.add(_guiOptions, 'pixelStep', 1.00, 50.00, 5.00).name('Pixels to Skip').step(1).onChange( createLines );
+    _gui.add(_guiOptions, 'meshStep', 0.10, 10.00, 1.00).name('Stepover (mm)').step(0.1).onChange( createLines );
+    _gui.add(_guiOptions, 'maxHeight', 1.00, 500.00, 5.00).name('Max Height (mm)').step(0.1).onChange( createLines );
     _gui.add(_guiOptions, 'invert').name('Invert Heights').onChange( createLines );
     _gui.add(_guiOptions, 'smoothing').name('Smooth').onChange( createLines );
     _gui.add(_guiOptions, 'absolute').name('Absolute (B&W)').onChange( createLines );
