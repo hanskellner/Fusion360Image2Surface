@@ -32,7 +32,7 @@ Download the archive file (ZIP) from Github by clicking on the "Clone or downloa
 
 ![Github Download ZIP](./Resources/GitHubDownloadZIP.png)
 
-Unarchive this file into the Addins folder and once created, rename the folder created from the Zip archive name "Fusion360Image2Surface-master.zip" to "Fusion360Image2Surface":
+Unarchive this file into the Addins folder and once created, rename the folder created from the Zip archive name "Fusion360Image2Surface-master.zip" to "Image2Surface":
 
 ![Fusion 360 Addins Folder](./Resources/Fusion360AddinsFolder.png)
 
