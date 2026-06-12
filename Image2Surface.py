@@ -1,15 +1,57 @@
 #Author-Hans Kellner
-#Description-This is an Autodesk Fusion 360 script that's used for generating surfaces from images.
-#Copyright (C) 2015-2018 Hans Kellner: https://github.com/hanskellner/Fusion360Image2Surface
+#Description-This is an Autodesk Fusion script that's used for generating surfaces from images.
+#Copyright (C) 2015-2026 Hans Kellner: https://github.com/hanskellner/Fusion360Image2Surface
 #MIT License: See https://github.com/hanskellner/Fusion360Image2Surface/LICENSE.md
 
 import adsk.core, adsk.fusion, adsk.cam, traceback
-import json, tempfile, platform
+import json, tempfile, platform, os
 
 # global set of event handlers to keep them referenced for the duration of the command
 handlers = []
 _app = adsk.core.Application.cast(None)
 _ui = adsk.core.UserInterface.cast(None)
+
+
+# Return the active design's default length unit as a string ('mm', 'cm', 'm',
+# 'in', 'ft'). The palette UI uses this to label and scale its controls so the
+# user works in the document's units rather than always millimeters.
+def documentLengthUnit():
+    try:
+        design = adsk.fusion.Design.cast(_app.activeProduct)
+        if design:
+            return design.unitsManager.defaultLengthUnits
+    except:
+        pass
+    return 'mm'
+
+
+# Map a unit string to the matching MeshUnits enum used when importing the OBJ.
+# The OBJ vertices are authored numerically in the document's units (see the
+# HTML/JS side), so the mesh must be imported with the corresponding unit.
+def meshUnitFor(unitStr):
+    unitMap = {
+        'mm': adsk.fusion.MeshUnits.MillimeterMeshUnit,
+        'cm': adsk.fusion.MeshUnits.CentimeterMeshUnit,
+        'm':  adsk.fusion.MeshUnits.MeterMeshUnit,
+        'in': adsk.fusion.MeshUnits.InchMeshUnit,
+        'ft': adsk.fusion.MeshUnits.FootMeshUnit
+    }
+    # Fusion's internal database length unit is centimeters - a safe fallback.
+    return unitMap.get(unitStr, adsk.fusion.MeshUnits.CentimeterMeshUnit)
+
+
+# Push the current document length unit to the palette's HTML/JS so it can
+# relabel and rescale its controls. Mirrors the Voronoi add-in's push model
+# (returnData from incomingFromHTML round-trips as a JS Promise, so it is not
+# used here).
+def sendUnitsToPalette(palette):
+    try:
+        unitJson = json.dumps({ 'unit': documentLengthUnit() })
+        if palette:
+            palette.sendInfoToHTML('units', unitJson)   # async push (received by fusionJavaScriptHandler)
+        return unitJson
+    except:
+        return json.dumps({ 'unit': 'mm' })
 
 # Event handler for the commandExecuted event.
 class ShowPaletteCommandExecuteHandler(adsk.core.CommandEventHandler):
@@ -29,6 +71,9 @@ class ShowPaletteCommandExecuteHandler(adsk.core.CommandEventHandler):
             # Create and display the palette.
             palette = _ui.palettes.itemById('Image2SurfacePalette')
             if not palette:
+                # NOTE: do NOT add a ?v= query to this local HTML path - Fusion
+                # treats it as a literal filename and fails to load (blank page).
+                # The ?v= cache-busting lives only on the <script>/<link> tags.
                 palette = _ui.palettes.add('Image2SurfacePalette', 'Image2Surface', 'image2surface.html', True, True, True, 1200, 800)
 
                 # Float the palette.
@@ -44,7 +89,11 @@ class ShowPaletteCommandExecuteHandler(adsk.core.CommandEventHandler):
                 palette.closed.add(onClosed)
                 handlers.append(onClosed)
             else:
-                palette.isVisible = True                              
+                palette.isVisible = True
+                # The page is already loaded (it won't re-fire its 'ready'
+                # handshake), so push the current document units now in case the
+                # active document - and thus its units - changed since last show.
+                sendUnitsToPalette(palette)
         except:
             _ui.messageBox('Command executed failed: {}'.format(traceback.format_exc()))
 
@@ -99,9 +148,8 @@ class MyCloseEventHandler(adsk.core.UserInterfaceGeneralEventHandler):
     def notify(self, args):
         try:
             # _ui.messageBox('Close button is clicked.')
-            foo = 1
-            if foo == 2:
-                foo = 2
+            # Do nothing
+            pass
         except:
             _ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
 
@@ -111,62 +159,104 @@ class MyHTMLEventHandler(adsk.core.HTMLEventHandler):
     def __init__(self):
         super().__init__()
     def notify(self, args):
+        objFilePath = None
         try:
-            htmlArgs = adsk.core.HTMLEventArgs.cast(args)            
-            data = json.loads(htmlArgs.data)
+            htmlArgs = adsk.core.HTMLEventArgs.cast(args)
+            data = json.loads(htmlArgs.data) if htmlArgs.data else {}
 
-            objStr = data['obj']
-            objStrLen = len(data['obj'])
+            global _app
 
-            if objStrLen > 0:
+            # The page sends exactly two kinds of message: the load/units
+            # handshake (no 'obj' key) and a generate (carrying 'obj'). We key
+            # off the payload SHAPE rather than the action string, because the
+            # action is not surfaced reliably through
+            # neutronJavaScriptObject.executeQuery (it can arrive empty), which
+            # otherwise made the handshake look like a failed generate and
+            # popped a spurious "Failed to generate mesh OBJ" dialog at startup.
+            #
+            # Handshake: reply with the document units and return. The units are
+            # delivered BOTH ways (mirrors the working Voronoi add-in): pushed
+            # async via sendInfoToHTML, and returned synchronously here as
+            # returnData (the JS captures the send's return value too).
+            if 'obj' not in data:
+                htmlArgs.returnData = sendUnitsToPalette(_ui.palettes.itemById('Image2SurfacePalette'))
+                return
 
-                fp = tempfile.NamedTemporaryFile(mode='w', suffix='.obj', delete=False)
-                fp.writelines(objStr)
-                fp.close()
-                objFilePath = fp.name
-                print ("Generated OBJ File: " + objFilePath)
+            objStr = data.get('obj') or ''
+            objStrLen = len(objStr)
 
-                global _app
-
-                # Get the current document, otherwise create a new one.
-                doc = _app.activeDocument
-                if not doc:
-                    doc = _app.documents.add(adsk.core.DocumentTypes.FusionDesignDocumentType)
-                
-                design = _app.activeProduct
-
-                # Get the root component of the active design.
-                rootComp = design.rootComponent
-
-                # Need to place the mesh in a BaseFeature (non-parametric)
-                baseFeats = rootComp.features.baseFeatures
-                baseFeat = baseFeats.add()
-                baseFeat.startEdit()
-
-                # Add a mesh body by importing this data (OBJ) file.
-                meshList = rootComp.meshBodies.add(objFilePath, adsk.fusion.MeshUnits.MillimeterMeshUnit, baseFeat)
-
-                # Need to finish the base feature edit
-                baseFeat.finishEdit()
-
-                if meshList.count > 0:
-                    # Success - close palette
-                    palette = _ui.palettes.itemById('Image2SurfacePalette')
-                    if palette:
-                        palette.isVisible = False
-                    
-                    # HACK: bug causes mesh to be placed away from origin
-                    # therefore zoom to fit so mesh appears to user
-                    vp = _app.activeViewport
-                    vp.fit()
-                else:
-                    _ui.messageBox('Failed to generate mesh body from file: {}'.format(objFilePath))
-
-            else:
+            if objStrLen <= 0:
                 _ui.messageBox('Failed to generate mesh OBJ')
+                return
+
+            # Get the current document, otherwise create a new one.
+            doc = _app.activeDocument
+            if not doc:
+                doc = _app.documents.add(adsk.core.DocumentTypes.FusionDesignDocumentType)
+
+            # 4.4: Make sure we actually have a valid, parametric design to
+            # import into. The user may have closed all documents between
+            # clicking "Generate Surface" and this callback firing.
+            design = adsk.fusion.Design.cast(_app.activeProduct)
+            if not design:
+                _ui.messageBox('No active Fusion design was found.\n\nPlease open or create a design, then try again.')
+                return
+
+            if design.designType != adsk.fusion.DesignTypes.ParametricDesignType:
+                _ui.messageBox('The "Image2Surface" command must be run in parametric modeling mode.\n\nPlease enable "Capture design history" for your document.')
+                return
+
+            # Write the OBJ out to a temp file for import.
+            fp = tempfile.NamedTemporaryFile(mode='w', suffix='.obj', delete=False)
+            fp.writelines(objStr)
+            fp.close()
+            objFilePath = fp.name
+            print ("Generated OBJ File: " + objFilePath)
+
+            # Get the root component of the active design.
+            rootComp = design.rootComponent
+
+            # Need to place the mesh in a BaseFeature (non-parametric)
+            baseFeats = rootComp.features.baseFeatures
+            baseFeat = baseFeats.add()
+            baseFeat.startEdit()
+
+            # Add a mesh body by importing this data (OBJ) file. The OBJ is
+            # authored numerically in the document's units (the JS uses the unit
+            # we pushed via 'units'), so import with the matching MeshUnits.
+            meshList = rootComp.meshBodies.add(objFilePath, meshUnitFor(documentLengthUnit()), baseFeat)
+
+            # Need to finish the base feature edit
+            baseFeat.finishEdit()
+
+            if meshList.count > 0:
+                # Success - close palette
+                palette = _ui.palettes.itemById('Image2SurfacePalette')
+                if palette:
+                    palette.isVisible = False
+
+                # HACK: bug causes mesh to be placed away from origin
+                # therefore zoom to fit so mesh appears to user
+                vp = _app.activeViewport
+                vp.fit()
+
+                htmlArgs.returnData = 'OK'
+            else:
+                _ui.messageBox('Failed to generate mesh body from file: {}'.format(objFilePath))
 
         except:
-            _ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
+            # 4.2: Surface the failure in the Fusion UI (e.g. malformed OBJ or a
+            # face-count limit), not just to stderr where the user never sees it.
+            if _ui:
+                _ui.messageBox('Failed to import the generated surface:\n{}'.format(traceback.format_exc()))
+        finally:
+            # 4.3: Always clean up the temp OBJ file, whether the import
+            # succeeded or raised.
+            if objFilePath:
+                try:
+                    os.remove(objFilePath)
+                except OSError:
+                    pass
 
 
 def run(context):
@@ -178,7 +268,6 @@ def run(context):
         # Add a command that displays the panel.
         showPaletteCmdDef = _ui.commandDefinitions.itemById('showImage2SurfacePalette')
         if not showPaletteCmdDef:
-            #strTooltip = '<div style=\'font-family:"Calibri";color:#e0e0e0; padding-top:-10px; padding-bottom:10px;\'><span style=\'font-size:20px;\'><b>Image 2 Surface</b></span></div>Use this add-in to convert an image into a surface (mesh).'
             showPaletteCmdDef = _ui.commandDefinitions.addButtonDefinition('showImage2SurfacePalette', 'Show Image 2 Surface', '', './/Resources//image2surface')
             showPaletteCmdDef.toolClipFilename = './/Resources//image2surface//image2surface-tooltip.png'
 
@@ -186,16 +275,23 @@ def run(context):
             onCommandCreated = ShowPaletteCommandCreatedHandler()
             showPaletteCmdDef.commandCreated.add(onCommandCreated)
             handlers.append(onCommandCreated)
+
+        # Get the CREATE panel in the MODEL workspace. 
+        createPanel = _ui.allToolbarPanels.itemById("SolidCreatePanel")
+
+        # Add button to the panel
+        btnControl = createPanel.controls.itemById('showImage2SurfacePalette')
+        if not btnControl:
+            btnControl = createPanel.controls.addCommand(showPaletteCmdDef)
+
+            # Make the button available in the panel.
+            btnControl.isPromotedByDefault = True
+            btnControl.isPromoted = True
         
-        # Add the command to the toolbar.
-        panel = _ui.allToolbarPanels.itemById('SolidScriptsAddinsPanel')
-        cntrl = panel.controls.itemById('showImage2SurfacePalette')
-        if not cntrl:
-            panel.controls.addCommand(showPaletteCmdDef)
-       
         if context['IsApplicationStartup'] is False:
-            _ui.messageBox('The "Image2Surface" command has been added\nto the ADD-INS panel dropdown of the MODEL workspace.\n\nTo run the command, select the ADD-INS dropdown\nthen select "Show Image 2 Surface".')
-    except:
+            _ui.messageBox('The "Image2Surface" command has been added\nto the SOLID->CREATE panel dropdown of the DESIGN workspace.\n\nTo run the command, select the SOLID->CREATE dropdown\nthen select "Show Image 2 Surface".')
+    except Exception:
+        #pass
         if _ui:
             _ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
 

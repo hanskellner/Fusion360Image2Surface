@@ -1,58 +1,49 @@
+/*
+ * App-specific structural styles.
+ *
+ * The look & feel of the controls panel comes from daisyUI (css/app.css).
+ * This file only handles layout: the full-viewport 3D content, the floating
+ * controls panel position, and the full-screen click-to-load overlay.
+ */
+
 html, body {
 	width: 100%;
 	height: 100%;
-	background-color: rgb(102, 255, 0);
-	margin: 0px;
+	margin: 0;
 	overflow: hidden;
-	font-family: Helvetica Neue, Arial, sans-serif;
-	font-size: 12px;
-	line-height: 1.5em;
-	color: #ccc;
 }
-a {
-	color: #fff;
-	text-decoration: none;
+
+#content {
+	position: fixed;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #000;
 }
+
+/* Floating controls panel (a daisyUI card). Position + sizing only so it
+   never collides with the viewport and stays usable on short windows. */
 #controls {
 	position: fixed;
-	top: 10px;
-	left: 10px;
-	width: 250px;
-	background-color:rgb(0, 32, 70);
-	padding:10px;
-    margin:0;
-    border: 2px solid rgb(80, 80, 80, 0.5);
-    border-radius: 4px;
-	-moz-box-shadow: 0 0 15px rgba(0, 0, 0, .6);
-	-webkit-box-shadow: 0 0 15px rgba(0, 0, 0, .6);
-	box-shadow: 0 0 15px rgba(0, 0, 0, .6);
+	top: 12px;
+	left: 12px;
+	width: 280px;
+	max-width: calc(100vw - 24px);
+	max-height: calc(100vh - 24px);
+	overflow-y: auto;
+	z-index: 10;
 }
-#content {
-	height: 100%;
-	width: 100%;
-	background-color: rgb(0, 0, 0);
-	-moz-box-shadow: 0 0 15px rgba(0, 0, 0, .6);
-	-webkit-box-shadow: 0 0 15px rgba(0, 0, 0, .6);
-	box-shadow: 0 0 15px rgba(0, 0, 0, .6);
-}
-#dropzone {
+
+/* Full-screen click-to-load overlay. Toggled by setLoadPromptVisible() in JS,
+   which sets display to "flex" (shown) or "none" (hidden). */
+#loadprompt {
 	position: fixed;
-    display: none;
-    width: 400;
-    height: 200;
-    top: 0; 
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgb(0, 0, 0, 0.8); /* Black background with opacity */
-}
-#dropzone span {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	font-size: 50px;
-	color: white;
-	transform: translate(-50%,-50%);
-	-ms-transform: translate(-50%,-50%);
-	font-family: Helvetica Neue, Arial, sans-serif;
+	inset: 0;
+	display: none;
+	align-items: center;
+	justify-content: center;
+	background-color: rgba(0, 0, 0, 0.78);
+	backdrop-filter: blur(2px);
+	cursor: pointer;
+	z-index: 5;
 }

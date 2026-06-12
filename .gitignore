@@ -1,0 +1,9 @@
+# Node tooling used only to build the UI stylesheet (css/app.css is committed).
+node_modules/
+npm-debug.log*
+
+# VSCode
+.vscode/
+
+# OS / editor
+.DS_Store

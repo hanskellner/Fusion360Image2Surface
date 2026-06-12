@@ -1,74 +1,165 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" data-theme="dim">
     <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Image 2 Surface</title>
-        <link href="css/style.css" rel="stylesheet" type="text/css">
+        <!-- Prebuilt daisyUI + Tailwind styles (see src/tailwind.css / npm run build:css).
+             The ?v= query string busts Fusion's CEF cache when these files change. -->
+        <link href="css/app.css?v=14" rel="stylesheet" type="text/css">
+        <!-- App-specific structural styles (viewport + load prompt overlay). -->
+        <link href="css/style.css?v=14" rel="stylesheet" type="text/css">
+        <!-- Three.js ES modules via jsDelivr (see https://threejs.org/manual/#en/installation). -->
+        <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/"
+            }
+        }
+        </script>
     </head>
     <body>
         <div id="content">
-            <div id="dropzone" class="dropzone">
-                <span class="dropzone">Drop Image Here</span>
+            <div id="loadprompt" class="loadprompt" title="Click to load an image">
+                <div class="pointer-events-none flex flex-col items-center gap-3 text-base-content/80">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h12A2.25 2.25 0 0 1 20.25 6v12A2.25 2.25 0 0 1 18 20.25H6A2.25 2.25 0 0 1 3.75 18V6Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m3.75 16.5 4.5-4.5a1.5 1.5 0 0 1 2.12 0l4.88 4.88M14.25 14.25l1.62-1.62a1.5 1.5 0 0 1 2.13 0l2.25 2.24M9 9.75h.008v.008H9V9.75Z" />
+                    </svg>
+                    <span class="text-2xl font-semibold tracking-wide">Click to Load Image</span>
+                    <span class="text-sm opacity-60">or use Choose File in the panel</span>
+                </div>
             </div>
         </div>
-        <div id="controls">
-            <h1>Image 2 Surface</h1>
-            <p>
-                <p>Load an image by Dragging &amp; Dropping onto view. Or load from file:</p>
-                <input type='file' id='getimagefile' />
-            </p>
-            <h3>Image Information</h3>
-            <ul>
-                <li>FileName: <span id="imagefilename"></span></li>
-                <li>Dimensions: <span id="imagedim">0x0</span></li>
-            </ul>
-            <h3>Surface Information</h3>
-            <ul>
-                <li>Dimensions: <span id="surfacedim"></span></li>
-            </ul>
-            <p>Generate a surface and send to Fusion 360:</p>
-            <button type='button' onclick='sendInfoToFusion()'>Generate Surface</button>
-            <p>Clear current image:</p>
-            <button type='button' onclick='clearImage()'>Clear Image</button>        
-            <h3>Help</h3>
-            <ul>
-                <li>View Rotate: Left mouse button</li>
-                <li>View Pan: Middle mouse button</li>
-                <li>View Zoom: Mousewheel</li>
-                <li>Adjust parameters to define surface mesh</li>
-            </ul>
-            <div><small>https://github.com/hanskellner/Fusion360Image2Surface</small></div>
+
+        <div id="controls" class="card card-sm bg-base-200/90 text-base-content shadow-xl border border-base-300/60 backdrop-blur">
+            <div class="card-body gap-3">
+
+                <div class="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h12A2.25 2.25 0 0 1 20.25 6v12A2.25 2.25 0 0 1 18 20.25H6A2.25 2.25 0 0 1 3.75 18V6Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m3.75 16.5 4.5-4.5a1.5 1.5 0 0 1 2.12 0l4.88 4.88M14.25 14.25l1.62-1.62a1.5 1.5 0 0 1 2.13 0l2.25 2.24M9 9.75h.008v.008H9V9.75Z" />
+                    </svg>
+                    <h1 class="card-title text-base font-semibold">Image 2 Surface</h1>
+                </div>
+
+                <!-- Load image -->
+                <div class="form-control">
+                    <label class="block text-xs opacity-70 mb-1" for="getimagefile">Click the view to load an image, or choose a file:</label>
+                    <input type="file" id="getimagefile" accept="image/*" class="file-input file-input-sm file-input-primary w-full" />
+                </div>
+
+                <!-- Image / surface info -->
+                <div class="rounded-box bg-base-300/40 px-3 py-2 text-xs space-y-1">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="opacity-60">File</span>
+                        <span id="imagefilename" class="font-mono truncate max-w-[11rem] text-right opacity-90">No image loaded</span>
+                    </div>
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="opacity-60">Image size</span>
+                        <span id="imagedim" class="font-mono opacity-90">&mdash;</span>
+                    </div>
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="opacity-60">Surface size</span>
+                        <span id="surfacedim" class="font-mono opacity-90">&mdash;</span>
+                    </div>
+                </div>
+
+                <div class="divider my-0 text-[10px] uppercase tracking-widest opacity-50">Parameters</div>
+
+                <!-- Parameters (replaces DAT.GUI) -->
+                <div class="space-y-3">
+
+                    <!-- Grid pattern selector (populated from the GridPatterns registry) -->
+                    <div class="form-control">
+                        <label class="block text-xs opacity-70 mb-1" for="ctrl-gridPattern">Grid Pattern</label>
+                        <select id="ctrl-gridPattern" class="select select-sm select-primary w-full"></select>
+                    </div>
+
+                    <!-- Per-pattern parameters (rebuilt by renderPatternParams when the pattern changes) -->
+                    <div id="pattern-params" class="space-y-3"></div>
+
+                    <div class="form-control" id="row-pixelStep">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs">Pixels to Skip</span>
+                            <span id="val-pixelStep" class="badge badge-sm badge-ghost font-mono">5</span>
+                        </div>
+                        <input type="range" id="ctrl-pixelStep" min="1" max="50" step="1" value="5" class="range range-primary range-xs w-full" />
+                    </div>
+
+                    <div class="form-control">
+                        <div class="flex items-center justify-between mb-1">
+                            <span id="label-meshStep" class="text-xs">Stepover (mm)</span>
+                            <span id="val-meshStep" class="badge badge-sm badge-ghost font-mono">1.0</span>
+                        </div>
+                        <input type="range" id="ctrl-meshStep" min="0.1" max="10" step="0.1" value="1" class="range range-primary range-xs w-full" />
+                    </div>
+
+                    <div class="form-control">
+                        <div class="flex items-center justify-between mb-1">
+                            <span id="label-maxHeight" class="text-xs">Max Height (mm)</span>
+                            <span id="val-maxHeight" class="badge badge-sm badge-ghost font-mono">5.0</span>
+                        </div>
+                        <input type="range" id="ctrl-maxHeight" min="0.1" max="50" step="0.1" value="5" class="range range-primary range-xs w-full" />
+                    </div>
+
+                    <label class="flex items-center justify-between cursor-pointer">
+                        <span class="text-xs">Invert Heights</span>
+                        <input type="checkbox" id="ctrl-invert" class="toggle toggle-primary toggle-sm" />
+                    </label>
+
+                    <label class="flex items-center justify-between cursor-pointer">
+                        <span class="text-xs">Smooth</span>
+                        <input type="checkbox" id="ctrl-smoothing" class="toggle toggle-primary toggle-sm" checked />
+                    </label>
+
+                    <label class="flex items-center justify-between cursor-pointer">
+                        <span class="text-xs">Absolute (B&amp;W)</span>
+                        <input type="checkbox" id="ctrl-absolute" class="toggle toggle-primary toggle-sm" />
+                    </label>
+                </div>
+
+                <!-- Actions -->
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button type="button" id="btn-generate" onclick="sendInfoToFusion()" class="btn btn-primary btn-sm">
+                        Generate Surface
+                    </button>
+                    <button type="button" id="btn-clear" onclick="clearImage()" class="btn btn-outline btn-sm">
+                        Clear Image
+                    </button>
+                </div>
+
+                <!-- Help -->
+                <div class="collapse collapse-arrow bg-base-300/40 rounded-box">
+                    <input type="checkbox" id="collapse-help" />
+                    <div class="collapse-title text-xs font-medium min-h-0 py-2">Help &amp; controls</div>
+                    <div class="collapse-content text-xs opacity-70">
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>Rotate view: left mouse button</li>
+                            <li>Pan view: right mouse button</li>
+                            <li>Zoom view: mouse wheel</li>
+                            <li>Adjust parameters to define the surface mesh</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] opacity-75">github.com/hanskellner/Fusion360Image2Surface</span>
+                    <!-- Build marker - confirms which page version Fusion actually loaded. -->
+                    <span class="text-[10px] opacity-75 font-mono">v22</span>
+                </div>
+            </div>
         </div>
 
-        <script src="js/Three.js"></script>
-        <script src="js/Detector.js"></script>
-        <script src="js/RequestAnimationFrame.js"></script>
-        <script src="js/TrackballControls.js"></script>
-        <script src="js/jquery.min.js"></script>
-        <script src="js/jquery.mousewheel.min.js"></script>
-        <script src="js/DAT.GUI.min.js"></script>
-        <script src="js/Utils.js"></script>
-        <script src="js/image2surface.js"></script>
+        <script src="js/Utils.js?v=21"></script>
+        <!-- Grid pattern registry + generators (globals used by image2surface.js). -->
+        <script src="js/gridpatterns/GridPatterns.js?v=21"></script>
+        <script src="js/gridpatterns/RectangularGridPattern.js?v=21"></script>
+        <script src="js/gridpatterns/HexagonalGridPattern.js?v=21"></script>
+        <script src="js/gridpatterns/TriangularGridPattern.js?v=21"></script>
+        <script src="js/gridpatterns/CircularGridPattern.js?v=21"></script>
+        <script type="module" src="js/image2surface.js?v=22"></script>
 
     </body>
-    <script>
-        
-        function sendInfoToFusion() {
-            var meshOBJStr = createMeshOBJString();
-
-            // Package up surface as JSON and send to Fusion
-            var args = {
-                obj : meshOBJStr
-            };
-
-            // DEFECT: This works on Mac but not Windows (undefined)
-            //adsk.fusionSendData('send', JSON.stringify(args));
-            // Use the wrapper function
-            neutronJavaScriptObject.executeQuery('send', JSON.stringify(args));
-        }
-
-        function clearImage() {
-            clearImageLoaded();
-        }
-
-    </script>
 </html>

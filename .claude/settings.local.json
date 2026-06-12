@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -sI --max-time 8 https://unpkg.com/three@0.160.0/build/three.min.js)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(curl -sI --max-time 15 https://unpkg.com/three@0.137.0/build/three.min.js)",
+      "Bash(curl -sI --max-time 15 https://unpkg.com/three@0.137.0/examples/js/controls/TrackballControls.js)"
+    ]
+  }
+}

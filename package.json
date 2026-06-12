@@ -1,0 +1,14 @@
+{
+  "name": "fusion360-image2surface",
+  "version": "3.0.0",
+  "private": true,
+  "description": "Dev-only tooling to build the daisyUI/Tailwind stylesheet (css/app.css) for the Image2Surface palette UI. This package is NOT shipped with the Fusion 360 add-in - only the generated css/app.css is.",
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/tailwind.css -o ./css/app.css --minify",
+    "watch:css": "tailwindcss -i ./src/tailwind.css -o ./css/app.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.0.0",
+    "daisyui": "^5.0.0"
+  }
+}

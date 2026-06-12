@@ -1,6 +1,6 @@
-# ![](./Resources/image2surface/32x32.png) Fusion 360 Image 2 Surface Add-In
+# ![](./Resources/image2surface/32x32.png) Autodesk Fusion Image 2 Surface Add-In
 
-This is an [Autodesk Fusion 360](http://fusion360.autodesk.com/) add-in that's used for generating surfaces from images.
+This is an [Autodesk Fusion](http://fusion360.autodesk.com/) add-in that's used for generating surfaces from images.
 
 ![Image2Surface](./Resources/image2surface/image2surface-tooltip.png)
 
@@ -22,47 +22,41 @@ This is a penny that was milled out of a 4"x4" block of 6061 Aluminum. The surfa
 
 ![Penny - Morphed spiral milling](./Resources/Penny_F360CAMMorphedSpiral3D.jpg)
 
-## How to install a Fusion 360 Add-In
+## Installation
 
-Please see the most recent add-in install instructions here:
+Please see the Fusion add-in install instructions here:
 
-https://knowledge.autodesk.com/support/fusion-360/troubleshooting/caas/sfdcarticles/sfdcarticles/How-to-install-an-ADD-IN-and-Script-in-Fusion-360.html 
+https://www.autodesk.com/support/technical/article/caas/sfdcarticles/sfdcarticles/How-to-install-an-ADD-IN-and-Script-in-Fusion-360.html
 
-Download the archive file (ZIP) from Github by clicking on the "Clone or download" button and then selecting "Download ZIP":
+If you are installing manually, then please download the archive file (ZIP) from Github by clicking on the "Clone or download" button and then selecting "Download ZIP".
 
-![Github Download ZIP](./Resources/GitHubDownloadZIP.png)
+Once you have the ZIP file, please follow the manual install instructions in the link above.
 
-Unarchive this file into the Addins folder and once created, rename the folder created from the Zip archive name "Fusion360Image2Surface-master.zip" to "Image2Surface":
-
-![Fusion 360 Addins Folder](./Resources/Fusion360AddinsFolder.png)
-
-You will then be able to use the Fusion 360 Scripts and Addins Manager to add this folder, and thus the addin, to Fusion.  Note, select the "Run on Startup" checkbox if you would like the add-in automatically started when Fusion 360 starts up.  This is useful if you will be using the add-in often.
-
-The first time you run the Image2Surface add-in, it will add itself to the Add-ins panel dropdown of the Model environment.  It should appear as an entry with the label "Show Image 2 Surface".
+Note, installing the add-in into the Fusion add-ins folder allows it to be found automatically and displayed in the add-ins list.
 
 ## Usage
 
 **Important: This add-in requires the document to be in parametric modeling mode (i.e. Capturing design history).**
 
 1. Enter the Model environment
-2. Run the Image2Surface add-in from the Scripts and Add-Ins Manager. Note, select the "Run on Startup" checkbox if you would like the add-in automatically started when Fusion 360 starts up and avoid having to manually run each time.
+2. Run the Image2Surface add-in from the Scripts and Add-Ins Manager. Note, select the "Run on Startup" checkbox if you would like the add-in automatically started when Fusion starts up and avoid having to manually run each time.
 
-  ![Run Add-In](./Resources/ScriptsAndAdd-Ins.png)
+  ![Run Add-In](./Resources/ScriptsAndAddIns.png)
 
 3. Display the Image 2 Surface Palette.
 
   ![Display Image 2 Surface Palette](./Resources/ShowImage2SurfacePalette.png)
 
-  - Click on the ADD-INS dropdown and then click on the "Image 2 Surface" menu item.  This should display the palette.
+  - Click on the SOLID->CREATE dropdown and then click on the "Show Image 2 Surface" menu item.  This should display the palette.
     - If the menu item isn't there then there might have been a problem running the add-in.  Go back to step 2 and try again.
     
   ![Image 2 Surface Palette](./Resources/Image2SurfacePalette.png)
     
   - This palette window contains a preview of the surface mesh that will be generated as well as controls for adjusting the mesh.
 4. Select an image file
-  - Drag and Drop an image file onto the palette window.  It should be displaying the text "Drop Image Here".  If not, click the "Clear Image" button.
-  - *TODO: Alternatively, click the "Open Image File" button and then select the file in the fial dialog.*
-  - WARNING: overly large images may cause problems (even crash the app).  Please work with images under 1000x1000 at first.  If you would like to try larger images, please save your work first in case loading the large image causes a crash.
+  - Click the view (the "Click to Load Image" area) and choose an image file in the dialog. You can also click the "Choose File" button in the control panel.
+    - *Drag-and-drop is also supported where the host allows it. Note: on macOS, Fusion's palette does not deliver dropped files to the page, so use click-to-load there. If the view is not showing the "Click to Load Image" prompt, click the "Clear Image" button first.*
+  - Images larger than 1600x1600 pixels are automatically downsampled to keep the tool responsive. You will be notified when this happens. Even so, please save your work before loading very large images.
 5. Preview the surface mesh
   - If the image is loaded correctly, it we be converted to a prelimary mesh and displayed in the view.
   - Adjust View
@@ -73,13 +67,21 @@ The first time you run the Image2Surface add-in, it will add itself to the Add-i
 
   ![Image of Parameters](./Resources/ParametersDialog.png)
 
-  - In the upper right of the view is small dialog containing parameters that control the mesh:
+  - The length-based controls (Stepover, Max Height) use the **active document's units** (mm, cm, m, in, ft). The unit is read from the document and shown in the control labels and the surface-size readout; the value you enter is in that unit, and the generated mesh is sized accordingly. (Changing the document's units between showings updates the controls; switching units converts the current Stepover/Max Height values so the physical size is preserved, clamped to the new unit's range.)
+  - In the control panel of the window are parameters that control the mesh:
+    - Grid Pattern:
+      - Selects the line pattern used to sample the image and build the surface. Changing the pattern updates the preview (and the generated mesh) immediately. Available patterns:
+        - **Rectangular** — the classic grid of rows and columns (the default).
+        - **Hexagonal** — a honeycomb of hexagons.
+        - **Triangular** — an isometric / triangular lattice.
+        - **Circular** — concentric rings with radial spokes, centered on the image.
+      - Each pattern may add its own controls below the dropdown (for example a *Cell Size*, or the *Ring Spacing* / *Spokes* for the circular pattern). The Rectangular pattern has no extra controls.
     - Pixels to Skip:
-      - This is the number of pixels to skip over for each row and column on the source image
-    - Stepover (mm):
-      - This is the distance in millimeters between each mesh grid line.
-    - Max Height (mm):
-      - This is the max height in millimeters of each grid node.  Each node's height is based on the color of the associate image pixel.  Black maps to zero (0) and pure white to the "Max Height" value.  Or the inverse if Invert checked.
+      - This is the number of pixels to skip over for each row and column on the source image. *(Used by the Rectangular pattern; the other patterns use their own spacing controls instead.)*
+    - Stepover (document units):
+      - This is the distance, in the document's units, between each mesh grid line.
+    - Max Height (document units):
+      - This is the max height, in the document's units, of each grid node.  Each node's height is based on the color of the associate image pixel.  Black maps to zero (0) and pure white to the "Max Height" value.  Or the inverse if Invert checked.
     - Invert Heights:
       - If checked then black maps to "Max Height" and pure white to zero (0).
     - Smooth:
@@ -118,13 +120,31 @@ And here's the t-spline in the CAM environment being used to create toolpaths fo
 
 ![Moon CAM Toolpaths](./Resources/MoonCAMToolpaths.png)
 
-More examples posted on my [Fusion 360 project gallery](https://fusion360.autodesk.com/users/hans-kellner).
+## Development
+
+The palette UI is styled with [daisyUI](https://daisyui.com) (on Tailwind CSS) and rendered with [Three.js](https://threejs.org) (r137). The add-in itself ships **no build step and no runtime CSS tooling** — Fusion only loads the prebuilt, committed stylesheet `css/app.css`.
+
+If you change the markup in `Image2Surface.html` (adding/removing daisyUI or Tailwind classes), regenerate the stylesheet:
+
+```bash
+npm install          # one-time: installs the Tailwind CLI + daisyUI (dev only)
+npm run build:css    # regenerates css/app.css from src/tailwind.css
+# or, while iterating:
+npm run watch:css
+```
+
+`package.json`, `src/tailwind.css`, and `node_modules/` are development-only and are not required at runtime. The theme (modern dark "dim", with "night" for OS dark mode) is configured in `src/tailwind.css`.
+
+The parameter controls are plain HTML `range`/`checkbox` inputs (daisyUI `range` / `toggle`) wired to the surface generator in `js/image2surface.js`.
+
+The grid patterns are modular: each lives in its own file under `js/gridpatterns/` and self-registers with the `GridPatterns` registry. Adding a new pattern is a matter of dropping in a new file and a `<script>` tag — see [`docs/GRID_PATTERNS.md`](docs/GRID_PATTERNS.md) for the generator contract.
 
 ## Trouble Shooting
 
-- Add-in fails to load.  Verify that the add-in has been placed in its own folder within the Addins folder.  If the files are not placed in their own folder then Fusion 360 will tend to fail loadin the add-in.
-- Large images can create large meshes which can cause Fusion 360 to take a very long time to process.  Or the app may just fail.  Try using a smaller resolution image. 
+- Add-in fails to load.  Verify that the add-in has been placed in its own folder within the Addins folder.  If the files are not placed in their own folder then Fusion will tend to fail loading the add-in.
+- Large images can create large meshes which can cause Fusion to take a very long time to process.  Or the app may just fail.  Try using a smaller resolution image. 
 
 ## Issues
 
-- 2016.02 : Fusion 360 has a 10K limitation on mesh size when converting to a BREP.  Any larger and it fails.
+- The v3 update uses ThreeJS loaded remotely from CDN.  Therefore, code will not work if computer is offline.  Plan to update so ThreeJS files are stored so offline mode supported.
+- 2016.02 : Fusion has a 10K limitation on mesh size when converting to a BREP.  Any larger and it fails.

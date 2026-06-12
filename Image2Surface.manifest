@@ -4,9 +4,9 @@
 	"id":	"8292ed75-c934-42d6-a7b3-65ac1c3a4102",
 	"author":	"Hans Kellner",
 	"description":	{
-		"":	"This is an Autodesk Fusion 360 script that's used for generating surfaces from images."
+		"":	"This is an Autodesk Fusion script that's used for generating surfaces from images."
 	},
-	"version":	"2.0",
+	"version":	"3.0",
 	"runOnStartup":	false,
 	"supportedOS":	"windows|mac",
 	"editEnabled":	true

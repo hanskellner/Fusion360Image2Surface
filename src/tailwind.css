@@ -1,0 +1,19 @@
+/*
+ * Tailwind + daisyUI source for the Image2Surface palette UI.
+ *
+ * This is a DEV-ONLY input file. Build the shipped stylesheet with:
+ *     npm install
+ *     npm run build:css      # -> css/app.css (minified, committed)
+ *
+ * The Fusion add-in only loads the generated css/app.css; it needs no
+ * build step or runtime JavaScript at load time.
+ */
+@import "tailwindcss";
+
+/* Only the palette markup uses utility / daisyUI classes. */
+@source "../Image2Surface.html";
+
+/* Modern dark look: "dim" by default, "night" when the OS prefers dark. */
+@plugin "daisyui" {
+  themes: dim --default, night --prefersdark;
+}
